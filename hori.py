@@ -42,8 +42,8 @@ def url_exists(url):
         return False
 
 
-def gather_links(url):
-    i = 1
+def gather_links(url, start_no=1):
+    i = start_no
     evaulating = True
     while evaulating:
         final_url = f'{url}{i:03d}{EXTENSION}'
@@ -52,6 +52,10 @@ def gather_links(url):
             image_links.append(final_url)
             i += 1
         else:
+            # image numbers increase continuously and do not
+            # reset between chapters nor groups
+            # as a result, if I start with failures, I have to keep searching
+            # This is bypassed by passing a starting image number (start_no)
             print(f'{final_url}: Failure')
             if image_links:
                 evaulating = False
