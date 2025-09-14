@@ -1,5 +1,6 @@
 import aiohttp
 import asyncio
+from PIL import Image
 import os
 import requests
 
@@ -79,10 +80,10 @@ async def download_async(session, url):
             with open(f'{output_dir}{filename}', 'wb') as file:
                 file.write(data)
 
-        print(f'Saved: {url}')
+        print(f'Saved: {filename}')
 
     except aiohttp.ClientError as error:
-        print(f'Request error for {url}: {error}')
+        print(f'Request error for {filename}: {error}')
 
 
 async def download_files():
@@ -93,7 +94,16 @@ async def download_files():
         await asyncio.gather(*tasks)
 
 
-ch_no = 100
+def convert_files():
+    files = os.listdir(output_dir)
+    for filename in files:
+        Image.open(f'{output_dir}{filename}').save(f'{output_dir}{filename[:-3]}png')
+        os.remove(f'{output_dir}{filename}')
+        print(f'Converted: {filename}')
+
+
+ch_no = 1
 output_dir += f'{ch_no:02d}/'
 gather_links(gen_url(ch_no))
 asyncio.run(download_files())
+convert_files()
