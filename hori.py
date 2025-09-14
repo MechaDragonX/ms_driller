@@ -5,13 +5,32 @@ import requests
 
 
 EXTENSION = '.gif'
-base_url = 'https://dka-hero.me/hm001_030/001/hori_'
+group_size = 30
+base_url = 'https://dka-hero.me/hm'
+base_file = 'hori_'
 headers = {
     'Referer': base_url,
     'User-Agent': 'Mozilla/5.0',
 }
 image_links = []
-output_dir = 'out/01/'
+output_dir = 'out/'
+
+
+def gen_url(ch_no):
+    i = 1
+    searching_group = True
+    while searching_group:
+        if ch_no >= (group_size * (i - 1) + 1) and \
+            ch_no <= group_size * i:
+            searching_group = False
+        else:
+            i += 1
+
+    group_start = group_size * (i - 1) + 1
+    group_end = group_size * i
+    # return url like:
+    # https://dka-hero.me/hm001_030/002/hori_
+    return f'{base_url}{group_start:03d}_{group_end:03d}/{ch_no:03d}/{base_file}'
 
 
 def url_exists(url):
@@ -23,18 +42,21 @@ def url_exists(url):
         return False
 
 
-def gather_links():
+def gather_links(url):
     i = 1
     evaulating = True
     while evaulating:
-        url = f'{base_url}{i:03d}{EXTENSION}'
-        if url_exists(url):
-            print(f'{url}: Success')
-            image_links.append(url)
+        final_url = f'{url}{i:03d}{EXTENSION}'
+        if url_exists(final_url):
+            print(f'{final_url}: Success')
+            image_links.append(final_url)
             i += 1
         else:
-            print(f'{url}: Failure')
-            evaulating = False
+            print(f'{final_url}: Failure')
+            if image_links:
+                evaulating = False
+            else:
+                i += 1
 
 
 async def download_async(session, url):
@@ -67,5 +89,7 @@ async def download_files():
         await asyncio.gather(*tasks)
 
 
-gather_links()
+ch_no = 100
+output_dir += f'{ch_no:02d}/'
+gather_links(gen_url(ch_no))
 asyncio.run(download_files())
